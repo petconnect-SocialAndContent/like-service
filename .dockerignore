@@ -1,4 +1,8 @@
-.bundle
-vendor
-*.log
-.env
+.git
+log/
+tmp/
+test/
+spec/
+*.md
+Dockerfile
+.dockerignore

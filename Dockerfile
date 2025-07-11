@@ -1,11 +1,39 @@
-FROM ruby:3.2
+FROM ruby:3.2-slim AS base
 
-WORKDIR /app
+# Variables de entorno necesarias
+ENV BUNDLE_DEPLOYMENT=true \
+    BUNDLE_PATH=/gems \
+    APP_HOME=/app
 
+# Instala dependencias del sistema necesarias
+RUN apt-get update -qq && \
+    apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    pkg-config \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Crea y se mueve al directorio de la app
+WORKDIR $APP_HOME
+
+# Copia sólo los archivos necesarios para instalar gemas
+COPY Gemfile Gemfile.lock ./
+
+# Instala las gemas en modo producción
+RUN gem install bundler -v 2.6.7 && \
+    bundle config set without 'development test' && \
+    bundle install --jobs 4 --retry 3 && \
+    rm -rf /root/.bundle/cache
+
+# Copia el resto de la aplicación
 COPY . .
 
-RUN gem install bundler && bundle install
-
+# Expone el puerto definido por la app
 EXPOSE 3020
 
+# Comando por defecto
 CMD ["ruby", "app/app.rb"]
