@@ -29,3 +29,4 @@ post '/api/v1/likes' do
   data = JSON.parse(request.body.read)
   data['user_id'] = request.env['current_user']['id']  # ✅ Sobrescribir con el del token
   request.env['rack.input'] = StringIO.new(data.to_json)  # Reinyecta el body modificado
+end
